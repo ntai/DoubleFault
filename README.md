@@ -1,2 +1,3 @@
 # DoubleFault
-Double Fault is a small Discord bot
+
+Double Fault is a small Discord bot.
