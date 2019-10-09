@@ -29,7 +29,7 @@ setuptools.setup(
   ],
   include_package_data=True,
   install_requires=[
-    'discord',
+    'discord>1.2',
   ],
   classifiers=[
     "Programming Language :: Python :: 3",

@@ -2,7 +2,7 @@
 PYPI_USER := $(shell echo $$PYPI_USERNAME)
 PYPI_PASSWORD := $(shell echo $$PYPI_PASSWORD)
 
-.PHONY: bootstrap setup upload install uninstall check manifest
+.PHONY: bootstrap development setup upload install uninstall check manifest up
 
 default: setup
 
@@ -13,6 +13,7 @@ upload:
 	twine upload --repository-url https://test.pypi.org/legacy/ dist/* --skip-existing -u ${PYPI_USER} -p ${PYPI_PASSWORD}
 
 check:
+	python3 setup.py develop
 	python3 -m twine check
 
 install:
@@ -24,7 +25,10 @@ uninstall:
 manifest:
 	echo include requirements.txt> MANIFEST.in
 
+# Setting up virtualenv
 bootstrap:
 	virtualenv -p python3 p3
-	# These tools are globally needed
-	sudo -H python3 -m pip install --upgrade setuptools wheel twine
+
+# If you want to upload this as package, do this.
+development:
+	. p3/bin/activate && pip3 install --upgrade setuptools wheel twine
