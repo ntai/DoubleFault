@@ -1,0 +1,31 @@
+{
+    "greeting-servers" : 
+    [
+	[
+	    "Boston Mystics",
+	    {
+    		"main-channel": "post-avatar-screenshot-to-join",
+		"info-channel": "rules-and-announcements",
+		"greetings-main": "Welcome {0.mention} to the {1.name} Discord. **Your Mystic account has not been verified yet. You are still a guest.**\nPlease post a screenshot of your Pokemon Go trainer screen and someone will be around shortly to add you.",
+		"greetings-info": "Meanwhile, please take a look at the {0.mention}!",
+		"greetings-dm": "Please verify your Mystic account.\n1. Open Your Pokemon Go app. \n2. Tap your avatar on left bottom of map view.\n3. Take a screen shot with your avatar with your level and buddy.\n4. Go back to the #post-avatar-screenshot-to-join channel.\n5. Tap + icon which is left of Message box of bottom.\n6. Choose the screenshot you just took.\n7. Someone from Boston Mystics will take a look and verify you.\n8. If your level is below 26, you need a vouching from someon already on the Boston Mystics, so find a good friend, or ask admin how to get in."
+	    }
+	]
+    ],
+
+    "count" : "Boston Mystics",
+    "reaction-roles":  [ { "server": "Boston Mystics",  "channel" : "self-roles" }, 
+			 { "server": "Boston Mystics",  "channel" : "self-roles-pvp" }, 
+			 { "server": "Boston Mystics",  "channel" : "self-roles-wild" }, 
+			 { "server": "Boston Mystics",  "channel" : "self-roles-boston" }, 
+			 { "server": "Boston Mystics",  "channel" : "self-roles-camberville" }, 
+			 { "server": "Boston Mystics",  "channel" : "self-roles-metro" }
+		       ],
+
+    "bot-reply": "I'm a bot, written by AimForTheAce.\n",
+    "ur-welcome": "You are welcome. FYI, I am a bot written by AimForTheAce.",
+
+    "help": "place holder",
+    
+    "example": "place holder"
+}

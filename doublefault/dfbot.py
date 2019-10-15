@@ -9,6 +9,7 @@ import datetime
 import discord.user
 import traceback
 import asyncio
+import argparse
 
 #
 class DoubleFault(discord.Client):
@@ -227,6 +228,11 @@ class DoubleFault(discord.Client):
 
     pass
 
-
-bot = DoubleFault()
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--config",  dest="config",  help="bot config",  default="/var/lib/doublefault/config.json")
+parser.add_argument("--account", dest="account", help="bot account", default="/var/lib/doublefault/account.json")
+args = parser.parse_args()
+    
+bot = DoubleFault(config_file=args.config, account_file=args.account)
 bot.run(bot.account["token"], bot=True)
