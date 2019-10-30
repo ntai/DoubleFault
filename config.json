@@ -22,6 +22,10 @@
 			 { "server": "Boston Mystics",  "channel" : "self-roles-metro" }
 		       ],
 
+    "echo":  [ { "server": "Boston Mystics",  "channel" : "100-percent-wild-no-chat", "role": "hundo" },
+               { "server": "Boston Mystics",  "channel" : "echo-test", "role": "echo" }
+	     ],
+
     "bot-reply": "I'm a bot, written by AimForTheAce.\n",
     "ur-welcome": "You are welcome. FYI, I am a bot written by AimForTheAce.",
 

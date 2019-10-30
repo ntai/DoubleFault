@@ -29,8 +29,13 @@ class DoubleFault(discord.Client):
             self.discord_servers[server_desc[0]] = server_desc[1]
             pass
 
-        self.my_servers = {} # The severs that the bot belongs
+        self.servers = {} # The severs that the bot belongs
+        self.channel_maps = {} # Channel map per server
+        self.my_roles = {} # The severs that the bot belongs
         self.self_rolls = {}
+
+        self.echo_map = {}
+
         self.current_log = None
         self.verbose = verbose
         pass
@@ -68,29 +73,38 @@ class DoubleFault(discord.Client):
         pass
 
 
-    async def on_message(self, message):
-        # If I'm dispatching the message that I sent, ignore
-        if message.author == self.user:
-            return
-
-        # PM
-        if message.guild is None:
-            if message.author.bot:
-                await self.handle_bot_pm(message)
-            else:
-                await self.handle_pm(message)
-                pass
-            return
-
-        #
-        await self.handle_server_message(message)
-        return
-
-
     async def handle_server_message(self, message):
         # Handing the message
+        self.nag( "got server message" )
+
+        if message.role_mentions is not None:
+            await self.maybe_echo(message)
+            pass
         pass
 
+    async def maybe_echo(self, message):
+        for role in message.role_mentions:
+            self.nag("contains role %s" % role.name)
+            pass
+        server = message.guild
+        if not server.id in self.echo_map:
+            self.nag("message's server %s has no echo map." % server.name)
+            return
+        echo_map = self.echo_map[server.id]
+        do_echo = False
+        src_channel = message.channel
+        for role in message.role_mentions:
+            if role.id in echo_map:
+                dest_channel = echo_map[role.id]
+                if dest_channel.id != src_channel.id:
+                    #
+                    do_echo = True
+                    await dest_channel.send("%s/#%s: %s" % (message.author.name, src_channel.name, message.content))
+                    break
+                pass
+            pass
+        pass
+      
     # Handling PM from person
     async def handle_pm(self, message):
         reply = "ping"
@@ -188,36 +202,118 @@ class DoubleFault(discord.Client):
             pass
         return
 
+    async def on_message(self, message):
+        # If I'm dispatching the message that I sent, ignore
+        if message.author == self.user:
+            return
+
+        # PM
+        if message.guild is None:
+            if message.author.bot:
+                await self.handle_bot_pm(message)
+            else:
+                await self.handle_pm(message)
+                pass
+            return
+
+        #
+        await self.handle_server_message(message)
+        return
+
     async def on_ready(self):
         # self.guilds - all of servers that the bot is in.
         # Convenient cache for my servers
         for server in self.guilds:
+            self.servers[server.id] = server
+            self.servers[server.name] = server
+
             # Using None for server - a bit of hack
-            submap = {None: server}
+            channel_map_by_id = {None: server}
+            channel_map_by_name = {None: server}
             for channel in server.channels:
-                submap[channel.name] = channel
+                channel_map_by_id[channel.id] = channel
+                channel_map_by_name[channel.name] = channel
                 pass
-            self.my_servers[server.name] = submap
+
+            self.channel_maps[server.id] = (channel_map_by_id, channel_map_by_name)
+
+            role_map_by_name = {None: server}
+            role_map_by_id = {None: server}
+            for role in server.roles:
+                role_map_by_name[role.name] = role
+                role_map_by_id[role.id] = role
+                pass
+            self.my_roles[server.id] = (role_map_by_id, role_map_by_name)
             pass
 
-        await self.setup_reaction_roles()
+        self.setup_reaction_roles()
+        self.setup_message_echo()
         return
 
-    async def setup_reaction_roles(self):
+    def setup_reaction_roles(self):
         # setting up the source / destination pairs
         reaction_roles = self.config.get("reaction-roles")
         for reaction_role in reaction_roles:
             server_name = reaction_role.get("server")
-            server = self.my_servers.get(server_name)
+            server = self.servers.get(server_name)
             if server is None:
-                self.nag("%s does not exist.\n" % server_name)
+                self.nag("I don't belong to server '%s'" % server_name)
+                pass
+            if not server.id in self.channel_maps:
+                self.nag("I have no channel map for '%s'" % server_name)
                 continue
+            (channel_map_by_id, channel_map_by_name) = self.channel_maps.get(server.id)
             channel_name = reaction_role.get("channel")
-            channel = server.get(channel_name)
+            channel = channel_map_by_name.get(channel_name)
             if channel is None:
                 self.nag("%s/%s does not exist.\n" % (server_name, channel_name))
                 continue
             pass
+        pass
+
+    def setup_message_echo(self):
+        # setting up the source / destination pairs
+        echoes = self.config.get("echo")
+        if echoes is None:
+            self.nag("no echoes")
+            pass
+
+        for echo in echoes:
+            server_name = echo.get("server")
+            server = self.servers[server_name]
+            if server is None:
+                self.nag("I don't belong to server %s" % server_name)
+                continue
+
+            if not server.id in self.channel_maps:
+                self.nag("I have no channel map for '%s'" % server_name)
+                continue
+            (channel_map_by_id, channel_map_by_name) = self.channel_maps[server.id]
+
+            channel_name = echo.get("channel")
+            channel = channel_map_by_name.get(channel_name)
+            if channel is None:
+                self.nag("channel map %s/%s does not exist.\n" % (server_name, channel_name))
+                continue
+
+            if not server.id in self.my_roles:
+                self.nag("role map %s/%s does not exist.\n" % (server_name, channel_name))
+                pass
+            (roles_by_id, roles_by_name) = self.my_roles[server.id]
+            role_name = echo.get("role")
+            role = roles_by_name.get(role_name)
+            if role is None:
+                self.nag("%s/%s does not exist.\n" % (server_name, role_name))
+                continue
+            
+            # server/role-mentioned = channel
+            if not server.id in self.echo_map:
+                self.echo_map[server.id] = {}
+                pass
+            self.echo_map[server.id][role.id] = channel
+            self.nag( "echo map established %s/%s = %s" % (server.name, role.name, channel.name))
+            pass
+
         pass
 
     def nag(self, message):
@@ -234,5 +330,5 @@ parser.add_argument("--config",  dest="config",  help="bot config",  default="/v
 parser.add_argument("--account", dest="account", help="bot account", default="/var/lib/doublefault/account.json")
 args = parser.parse_args()
     
-bot = DoubleFault(config_file=args.config, account_file=args.account)
+bot = DoubleFault(config_file=args.config, account_file=args.account, verbose=True)
 bot.run(bot.account["token"], bot=True)

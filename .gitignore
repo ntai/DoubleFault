@@ -108,3 +108,6 @@ venv.bak/
 
 # virtualenv
 p3
+
+# account info
+account.json

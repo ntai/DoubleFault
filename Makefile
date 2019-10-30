@@ -3,7 +3,7 @@ PYPI_USER := $(shell echo $$PYPI_USERNAME)
 PYPI_PASSWORD := $(shell echo $$PYPI_PASSWORD)
 DFBOT := dfbot
 
-.PHONY: bootstrap development setup upload install uninstall check manifest up docker
+.PHONY: bootstrap development setup upload install uninstall check manifest up docker run
 
 default: setup
 
@@ -34,8 +34,8 @@ bootstrap:
 development:
 	. p3/bin/activate && pip3 install --upgrade setuptools wheel twine
 
-build:
-	docker build -t ${DFBOT} .
+docker:
+	sudo docker build -t ${DFBOT} .
 
 run:
-	docker run -it --rm --name doublefault ${DFBOT}
+	sudo docker run -it --rm --name doublefault ${DFBOT}
