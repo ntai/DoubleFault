@@ -1,3 +1,5 @@
+AWS_REGION := $(shell cat ~/.aws/region)
+AWS_ACCOUNT_ID = $(shell cat ~/.aws/account-id)
 
 PYPI_USER := $(shell echo $$PYPI_USERNAME)
 PYPI_PASSWORD := $(shell echo $$PYPI_PASSWORD)
@@ -35,7 +37,15 @@ development:
 	. p3/bin/activate && pip3 install --upgrade setuptools wheel twine
 
 docker:
-	sudo docker build -t ${DFBOT} .
+	docker build -t ${DFBOT} .
 
 run:
-	sudo docker run -it --rm --name doublefault ${DFBOT}
+	docker run -it --rm --name doublefault ${DFBOT}
+
+# You need to login so that you can push image
+awslogin:
+	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+
+awspush:
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/df_bot
+
