@@ -106,8 +106,5 @@ venv.bak/
 # Emacs
 *~
 
-# virtualenv
-p3
-
 # account info
 account.json

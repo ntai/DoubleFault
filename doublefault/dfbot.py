@@ -10,6 +10,7 @@ import discord.user
 import traceback
 import asyncio
 import argparse
+import logging
 
 #
 class DoubleFault(discord.Client):
@@ -151,10 +152,11 @@ class DoubleFault(discord.Client):
         message = await channel.fetch_message(message_id)
 
         server = await self.fetch_guild(guild_id)
-        perms = channel.permissions_for(message.author)
-        if not perms.manage_roles:
-            self.nag( "no role management")
-            pass
+        # This is busted.  permissions_for() is broken.
+        # perms = channel.permissions_for(message.author)
+        # if not perms.manage_roles:
+        #     self.nag( "no role management")
+        #     pass
 
         member = server.get_member(user_id)
         if member is None:
@@ -317,18 +319,18 @@ class DoubleFault(discord.Client):
         pass
 
     def nag(self, message):
-        if self.verbose:
-            print(message)
-            pass
+        logging.info(message)
         pass
 
     pass
 
 import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument("--config",  dest="config",  help="bot config",  default="/var/lib/doublefault/config.json")
-parser.add_argument("--account", dest="account", help="bot account", default="/var/lib/doublefault/account.json")
-args = parser.parse_args()
-    
-bot = DoubleFault(config_file=args.config, account_file=args.account, verbose=True)
-bot.run(bot.account["token"], bot=True)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config",  dest="config",  help="bot config",  default="/var/lib/doublefault/config.json")
+    parser.add_argument("--account", dest="account", help="bot account", default="/var/lib/doublefault/account.json")
+    args = parser.parse_args()
+
+    bot = DoubleFault(config_file=args.config, account_file=args.account, verbose=True)
+    bot.run(bot.account["token"], bot=True)
+    pass

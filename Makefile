@@ -30,17 +30,17 @@ manifest:
 
 # Setting up virtualenv
 bootstrap:
-	virtualenv -p python3 p3
+	python3 -m venv venv
 
 # If you want to upload this as package, do this.
 development:
-	. p3/bin/activate && pip3 install --upgrade setuptools wheel twine
+	. venv/bin/activate && pip3 install --upgrade setuptools wheel twine
 
 docker:
 	docker build -t ${DFBOT} .
 
 run:
-	docker run -it --rm --name doublefault ${DFBOT}
+	nohup docker run --rm --name doublefault ${DFBOT} > /dev/null 2>&1 &
 
 # You need to login so that you can push image
 awslogin:
